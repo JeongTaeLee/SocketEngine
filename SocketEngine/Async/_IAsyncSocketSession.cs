@@ -3,12 +3,12 @@ using SocketEngine.Logging;
 
 namespace SocketEngine.Async
 {
-    public interface IAsyncSocketSessionOption : ISocketSessionOption
+    public interface _IAsyncSocketSessionOption : ISocketSessionOption
     {
         SocketAsyncEventArgsProxy socketAsyncProxy { get; }
     }
 
-    public interface IAsyncSocketSession : ISocketSession
+    public interface _IAsyncSocketSession : ISocketSession
     {
         SocketAsyncEventArgsProxy socketAsyncProxy { get; }
 

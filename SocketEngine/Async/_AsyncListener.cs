@@ -8,14 +8,14 @@ using SocketEngine.Logging;
 
 namespace SocketEngine.Async
 {
-    class AsyncListener
+    class _AsyncListener
     {
         private byte[] _keepAliveOptionValue = null;
 
         public delegate void ExceptionHandler(Exception ex);
         public delegate void SocketAcceptedHandler(Socket socket);
         
-        private ServerConfig serverConfig = null;
+        private SocketServerConfig serverConfig = null;
         private ILogger _logger = null;
 
         private Socket listenerSocket = null;
@@ -29,10 +29,10 @@ namespace SocketEngine.Async
         public event ExceptionHandler throwedException;
         public event SocketAcceptedHandler accepted;
 
-        public void Start(ServerConfig listenerOption)
+        public void Start(SocketServerConfig listenerOption)
         {
             this.serverConfig = listenerOption;
-            _logger = this.serverConfig.loggerFactory.GetLogger<AsyncListener>();
+            _logger = this.serverConfig.loggerFactory.GetLogger<_AsyncListener>();
 
             uint dummy = 0;
             _keepAliveOptionValue = new byte[Marshal.SizeOf(dummy) * 3];

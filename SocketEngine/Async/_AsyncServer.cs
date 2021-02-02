@@ -6,22 +6,23 @@ using SocketEngine.Logging;
 
 namespace SocketEngine.Async
 {
-    public class AsyncServer<TSession, TRequestInfo> : ILoggerProvider
-        where TSession : AsyncSocketSession<TRequestInfo>, new()
+    public class _AsyncServer<TSession, TRequestInfo> : ILoggerProvider
+        where TSession : _AsyncSocketSession<TRequestInfo>, new()
         where TRequestInfo : IRequestInfo
     {
-        private ServerConfig _serverConfig = null;
-        private AsyncListener _listener = null;
+        private SocketServerConfig _serverConfig = null;
+        private _AsyncListener _listener = null;
 
         private BufferManager _bufferManager = null;
         private SocketAsyncEventArgsProxyPool _socketAsyncProxyPool = null;
+
 
         private bool _completeSetUP = false;
 
         public ILogger logger { get; private set; } = null;
         public ILoggerFactory loggerFactory { get; private set; } = null;
 
-        public void SetUp(ServerConfig serverConfig)
+        public void SetUp(SocketServerConfig serverConfig)
         {
             if (serverConfig == null)
                 throw new ArgumentNullException("serverConfig");
@@ -56,7 +57,7 @@ namespace SocketEngine.Async
             if (!_completeSetUP)
                 throw new Exception("SetUp must be called first before starting the server.");
 
-            _listener = new AsyncListener();
+            _listener = new _AsyncListener();
             _listener.accepted += OnSocketAccepted;
             _listener.throwedException += OnThrowedException;
             _listener.Start(_serverConfig);
