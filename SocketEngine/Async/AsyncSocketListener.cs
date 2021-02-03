@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using SocketEngine.Extensions;
 using SocketEngine.Logging;
 
 namespace SocketEngine.Async
@@ -32,14 +33,19 @@ namespace SocketEngine.Async
 
         public AsyncSocketListener(Socket listenerSocket, SocketServerConfig config)
         {
+            ExceptionExtension.ArgumentNullExceptionIfNull(listenerSocket, "listenerSocket");
+            ExceptionExtension.ArgumentNullExceptionIfNull(config, "config");
+
+            var logger = config.loggerFactory.GetLogger<AsyncSocketListener>();
+            ExceptionExtension.ExceptionIfNull(logger, "Unable to get the logger from the loggerFactory.");
+            
             _config = config;
             _listenerSocket = listenerSocket;
-            _logger = _config.loggerFactory.GetLogger<AsyncSocketListener>();
+            _logger = logger;
 
             uint dummy = 0;
             _keepAliveOptionValue = new byte[Marshal.SizeOf(dummy) * 3];
-            int enable = config.keepAliveEnable ? 1 : 0;
-            BitConverter.GetBytes((uint)enable).CopyTo(_keepAliveOptionValue, 0);
+            BitConverter.GetBytes((uint)(config.keepAliveEnable ? 1 : 0)).CopyTo(_keepAliveOptionValue, 0);
             BitConverter.GetBytes((uint)(config.keepAliveTime * 1000)).CopyTo(_keepAliveOptionValue, Marshal.SizeOf(dummy));
             BitConverter.GetBytes((uint)(config.keepAliveInterval * 1000)).CopyTo(_keepAliveOptionValue, Marshal.SizeOf(dummy) * 2);
         }
@@ -60,7 +66,16 @@ namespace SocketEngine.Async
 
         public void Close()
         {
+            _isRunning = false;
 
+            _resetEvent?.Dispose();
+            _resetEvent = null;
+
+            _accepSocketEvent?.Dispose();
+            _accepSocketEvent = null;
+
+            _loopTask?.Wait();
+            _loopTask = null;
         }
 
         private void LoopAccept()
@@ -81,6 +96,7 @@ namespace SocketEngine.Async
                 }
                 catch (Exception ex)
                 {
+                    _resetEvent?.Set();
                     throwedException?.Invoke(ex);
                 }
             }
@@ -92,12 +108,16 @@ namespace SocketEngine.Async
         {
             if (args.SocketError != SocketError.Success)
             {
-                _logger.Error($"Socket error occurred during accept - SocketError({e.SocketError})");
+                _logger.Error($"Socket error occurred during accept - SocketError({args.SocketError})");
                 return;
             }
 
             Socket newSocket = args.AcceptSocket;
-
+            if (newSocket == null)
+            {
+                _logger.Error($"AcceptSocket is null");
+                return;
+            }
             // 소켓 설정.
             if (_config.sendTimeOut > 0)
                 newSocket.SendTimeout = _config.sendTimeOut;
@@ -108,7 +128,7 @@ namespace SocketEngine.Async
             if (_config.receiveBufferSize > 0)
                 newSocket.ReceiveBufferSize = _config.receiveBufferSize;
 
-            // TODO : 지원 여부 알아보기 (IOControl와 함께)
+            //TODO : 지원 여부 알아보기 (IOControl와 함께)
             newSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, _keepAliveOptionValue);
             newSocket.NoDelay = true; // Nagle() 알고리즘 적용 여부(TRUE : 적용하지 않음). 패킷을 모아서 보낼 것인지 설정하는 옵션 즉각적인 응답이 중요한 곳에서는 사용하지 않는다)
             newSocket.LingerState = new LingerOption(true, 0); // 두번째 인자가 0이면 close 호출 시 버퍼에 남아있는 모든 송수신 데이터를 버리고 즉시 종료한다.

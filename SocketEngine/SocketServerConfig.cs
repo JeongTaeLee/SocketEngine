@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using SocketEngine.Extensions;
+using System.Net.Sockets;
 
 namespace SocketEngine
 {
@@ -78,6 +79,23 @@ namespace SocketEngine
 
             public SocketServerConfig Builde()
             {
+                ExceptionExtension.ArgumentExceptionIsNullOrEmpty(_ip, "ip");
+                ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_port, "port");
+                ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_backlog, "backlog");
+
+                ExceptionExtension.ArgumentExceptionIfTrue(_protocolType == ProtocolType.Unknown, "protocolType");
+                ExceptionExtension.ArgumentExceptionIfTrue(_socketType == SocketType.Unknown, "socketType");
+                
+                ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_maxConnection, "maxConnection");
+                ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_receiveBufferSize, "receiveBufferSize");
+                ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_sendBufferSize, "sendBufferSize");
+                ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_sendTimeOut, "sendTimeOut");
+
+                ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_keepAliveTime, "keepAliveTime");
+                ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_keepAliveInterval, "keepAliveInterval");
+
+                ExceptionExtension.ArgumentNullExceptionIfNull(_loggerFactory, "loggerFactory");
+
                 return new SocketServerConfig(_ip, _port, _backlog, _protocolType, _socketType,
                     _maxConnection, _receiveBufferSize, _sendBufferSize, _sendTimeOut, _keepAliveEnable, _keepAliveTime, _keepAliveInterval, _loggerFactory);
             }

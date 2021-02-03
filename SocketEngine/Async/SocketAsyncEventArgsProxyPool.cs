@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Net.Sockets;
+using SocketEngine.Extensions;
 
 namespace SocketEngine.Async
 {
@@ -20,6 +20,8 @@ namespace SocketEngine.Async
 
         public SocketAsyncEventArgsProxyPool(IEnumerable<SocketAsyncEventArgsProxy> enumerator)
         {
+            ExceptionExtension.ArgumentNullExceptionIfNull(enumerator, "enumerator");
+
             _pools = new ConcurrentStack<SocketAsyncEventArgsProxy>(enumerator);
         }
 
@@ -29,7 +31,7 @@ namespace SocketEngine.Async
         // to add to the pool  
         public void Push(SocketAsyncEventArgsProxy item)
         {
-            if (item == null) { throw new ArgumentNullException("Items added to a SocketAsyncEventArgsPool cannot be null"); }
+            ExceptionExtension.ArgumentNullExceptionIfNull(item, "item");
 
             _pools.Push(item);
         }

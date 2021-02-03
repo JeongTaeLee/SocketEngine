@@ -1,4 +1,6 @@
 ﻿using System.Net.Sockets;
+using SocketEngine.Extensions;
+using SocketEngine.Protocols;
 
 namespace SocketEngine.Bases
 {
@@ -7,17 +9,30 @@ namespace SocketEngine.Bases
     /// 대신 SocketSessionBehavior라는 클래스를 상속받아서 해당 클래스의 동작을 정의한다.
     /// </summary>
     /// <typeparam name="TSessionBehavior"></typeparam>
-    abstract class SocketSession<TSessionBehavior>
-        where TSessionBehavior : SocketSessionBehavior<TSessionBehavior>, new()
+    internal abstract class SocketSession<TSessionBehavior, TRequestInfo>
+        where TSessionBehavior : SocketSessionBehavior<TSessionBehavior, TRequestInfo>, new()
+        where TRequestInfo : IRequestInfo
     {
-        public Socket socket;
-
-        public TSessionBehavior behavior;
+        public string sessionId { get; private set; } = null;
+        public SocketServer<TSessionBehavior, TRequestInfo> socketServer { get; private set; } = null;
+        public Socket socket { get; private set; } = null;
+        public TSessionBehavior behavior { get; private set; } = null;
 
         public SocketSession()
         {
-            behavior = new TSessionBehavior();
-            behavior.Initialize(this);
+            this.behavior = new TSessionBehavior();
+            this.behavior.Initialize(this);
+        }
+
+        public void Initialize(string sessionId, Socket socket, SocketServer<TSessionBehavior, TRequestInfo> socketServer)
+        {
+            ExceptionExtension.ArgumentExceptionIsNullOrEmpty(sessionId, "sessionId");
+            ExceptionExtension.ArgumentNullExceptionIfNull(socket, "socket");
+            ExceptionExtension.ArgumentNullExceptionIfNull(socketServer, "socketServer");
+
+            this.sessionId = sessionId;
+            this.socket = socket;
+            this.socketServer = socketServer;
         }
 
         public abstract void Start();

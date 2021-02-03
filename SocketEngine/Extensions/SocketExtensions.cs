@@ -2,7 +2,7 @@
 
 namespace SocketEngine.Extensions
 {
-    public static class SocketExtensions
+    internal static class SocketExtensions
     {
         public static void SafeClose(this Socket socket)
         {

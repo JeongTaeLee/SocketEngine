@@ -1,11 +1,12 @@
 ﻿
-
 using SocketEngine.Bases;
+using SocketEngine.Protocols;
 
 namespace SocketEngine.Async
 {
-    class AsyncSocketSession<TSessionBehavior> : SocketSession<TSessionBehavior>
-        where TSessionBehavior : SocketSessionBehavior<TSessionBehavior>, new()
+    internal sealed class AsyncSocketSession<TSessionBehavior, TRequestInfo> : SocketSession<TSessionBehavior, TRequestInfo>
+        where TSessionBehavior : SocketSessionBehavior<TSessionBehavior, TRequestInfo>, new()
+        where TRequestInfo : IRequestInfo
     {
         public override void Start()
         {

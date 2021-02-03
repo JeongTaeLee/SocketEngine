@@ -17,20 +17,19 @@ namespace SocketEngine.Async
             originCount = asyncEventArgs.Count;
         }
 
-        public void Initialize(_IAsyncSocketSession processor)
-        {
-            asyncEventArgs.UserToken = processor;
-        }
+        //public void Initialize(_IAsyncSocketSession processor)
+        //{
+        //    asyncEventArgs.UserToken = processor;
+        //}
 
-        public void Reset()
-        {
-            asyncEventArgs.UserToken = null;
-        }
+        //public void Reset()
+        //{
+        //    asyncEventArgs.UserToken = null;
+        //}
 
         private void AsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
         {
-            var processor = asyncEventArgs.UserToken as _IAsyncSocketSession;
-            
+            //var processor = asyncEventArgs.UserToken as _IAsyncSocketSession; 
         }
     }
 }

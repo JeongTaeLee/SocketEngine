@@ -1,0 +1,11 @@
+C:\Projects\SocketEngine\SocketEngine\bin\Debug\net5.0\SocketEngine.deps.json
+C:\Projects\SocketEngine\SocketEngine\bin\Debug\net5.0\SocketEngine.dll
+C:\Projects\SocketEngine\SocketEngine\bin\Debug\net5.0\ref\SocketEngine.dll
+C:\Projects\SocketEngine\SocketEngine\bin\Debug\net5.0\SocketEngine.pdb
+C:\Projects\SocketEngine\SocketEngine\obj\Debug\net5.0\SocketEngine.GeneratedMSBuildEditorConfig.editorconfig
+C:\Projects\SocketEngine\SocketEngine\obj\Debug\net5.0\SocketEngine.AssemblyInfoInputs.cache
+C:\Projects\SocketEngine\SocketEngine\obj\Debug\net5.0\SocketEngine.AssemblyInfo.cs
+C:\Projects\SocketEngine\SocketEngine\obj\Debug\net5.0\SocketEngine.csproj.CoreCompileInputs.cache
+C:\Projects\SocketEngine\SocketEngine\obj\Debug\net5.0\SocketEngine.dll
+C:\Projects\SocketEngine\SocketEngine\obj\Debug\net5.0\ref\SocketEngine.dll
+C:\Projects\SocketEngine\SocketEngine\obj\Debug\net5.0\SocketEngine.pdb

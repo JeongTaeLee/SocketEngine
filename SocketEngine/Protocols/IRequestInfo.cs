@@ -1,4 +1,4 @@
-﻿namespace SocketEngine
+﻿namespace SocketEngine.Protocols
 {
     public interface IRequestInfo
     {

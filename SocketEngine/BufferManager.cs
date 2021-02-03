@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
+using SocketEngine.Extensions;
 
 namespace SocketEngine
 {
@@ -14,9 +16,14 @@ namespace SocketEngine
 
         public BufferManager(int totalBytes, int stubBufferSize)
         {
+            ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(totalBytes, "totalBytes");
+            ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(stubBufferSize, "stubBufferSize");
+
+            ExceptionExtension.ArgumentExceptionIfTrue(totalBytes < stubBufferSize, "totalBytes", "otalBytes cannot be less than stubBufferSize");
+
             _byteLength = totalBytes;
-            _currentIndex = 0;
             _stubBufferSize = stubBufferSize;
+            _currentIndex = 0;
             _freeIndexPool = new Stack<int>();
         }
 

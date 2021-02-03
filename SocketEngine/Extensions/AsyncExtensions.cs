@@ -4,7 +4,7 @@ using SocketEngine.Logging;
 
 namespace SocketEngine.Extensions
 {
-    public static class AsyncExtensions
+    internal static class AsyncExtensions
     {
         public static Task AsyncRun(this ILoggerProvider loggerProvider, Action task)
         {
