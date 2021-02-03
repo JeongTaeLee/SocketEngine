@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using System.Collections.Concurrent;
 using SocketEngine.Extensions;
 using SocketEngine.Logging;
 using SocketEngine.Protocols;
@@ -13,6 +14,9 @@ namespace SocketEngine.Bases
         protected SocketServerConfig config { get; private set; } = null;
         protected Socket socket { get; private set; } = null;
         protected ILogger logger { get; private set; } = null;
+
+        private ConcurrentDictionary<string, SocketSession<TSessionBehavior, TRequestInfo>> _sessionDict 
+            = new ConcurrentDictionary<string, SocketSession<TSessionBehavior, TRequestInfo>>();
 
         public SocketServer(SocketServerConfig config)
         {
@@ -52,7 +56,10 @@ namespace SocketEngine.Bases
 
         internal void AddSession(SocketSession<TSessionBehavior, TRequestInfo> socketSession)
         {
-
+            ExceptionExtension.ArgumentNullExceptionIfNull(socketSession, "socketSession");
+            ExceptionExtension.ArgumentExceptionIsNullOrEmpty(socketSession.sessionId, "sessionId");
+            ExceptionExtension.ExceptionIfTrue(_sessionDict.ContainsKey(socketSession.sessionId), "This session has already been added.");
+            ExceptionExtension.ExceptionIfFalse(_sessionDict.TryAdd(socketSession.sessionId, socketSession), "Failed to add to session Dictionary");
         }
 
         internal void RemoveSession(SocketSession<TSessionBehavior, TRequestInfo> socketSession)
