@@ -6,7 +6,13 @@ namespace SocketEngine.Logging
         public NLogLoggerFactory(string config)
             : base(config)
         {
-
+            if (!IsSharedConfig)
+            {
+                NLog.Config.XmlLoggingConfiguration.SetCandidateConfigFilePaths(new[] { ConfigFile });
+            }
+            else
+            {
+            }
         }
 
         public override ILogger GetLogger(string name)

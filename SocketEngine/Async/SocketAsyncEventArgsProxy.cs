@@ -2,34 +2,35 @@
 
 namespace SocketEngine.Async
 {
-    public class SocketAsyncEventArgsProxy
+    internal class SocketAsyncEventArgsProxy
     {
-        public SocketAsyncEventArgs asyncEventArgs { get; private set; }
+        public SocketAsyncEventArgs socketEventArgs { get; private set; }
         public int originOffset { get; private set; }
         public int originCount { get; private set; }
 
         public SocketAsyncEventArgsProxy(SocketAsyncEventArgs args)
         {
-            asyncEventArgs = args;
-            asyncEventArgs.Completed += AsyncEventArgs_Completed;
+            socketEventArgs = args;
+            socketEventArgs.Completed += AsyncEventArgs_Completed;
 
-            originOffset = asyncEventArgs.Offset;
-            originCount = asyncEventArgs.Count;
+            originOffset = socketEventArgs.Offset;
+            originCount = socketEventArgs.Count;
         }
 
-        //public void Initialize(_IAsyncSocketSession processor)
-        //{
-        //    asyncEventArgs.UserToken = processor;
-        //}
+        public void Initialize(ISocketAsyncEventArgsProxyHandler processor)
+        {
+            socketEventArgs.UserToken = processor;
+        }
 
-        //public void Reset()
-        //{
-        //    asyncEventArgs.UserToken = null;
-        //}
+        public void Reset()
+        {
+            socketEventArgs.UserToken = null;
+        }
 
         private void AsyncEventArgs_Completed(object sender, SocketAsyncEventArgs e)
         {
-            //var processor = asyncEventArgs.UserToken as _IAsyncSocketSession; 
+            var processor = socketEventArgs.UserToken as ISocketAsyncEventArgsProxyHandler;
+            
         }
     }
 }

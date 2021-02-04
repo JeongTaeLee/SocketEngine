@@ -5,7 +5,7 @@ using SocketEngine.Extensions;
 
 namespace SocketEngine.Async
 {
-    class SocketAsyncEventArgsProxyPool
+    internal class SocketAsyncEventArgsProxyPool
     {
         private ConcurrentStack<SocketAsyncEventArgsProxy> _pools;
 
@@ -33,6 +33,7 @@ namespace SocketEngine.Async
         {
             ExceptionExtension.ArgumentNullExceptionIfNull(item, "item");
 
+            item.Reset();
             _pools.Push(item);
         }
 

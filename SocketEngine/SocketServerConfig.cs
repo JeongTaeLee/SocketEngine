@@ -79,7 +79,7 @@ namespace SocketEngine
 
             public SocketServerConfig Builde()
             {
-                ExceptionExtension.ArgumentExceptionIsNullOrEmpty(_ip, "ip");
+                ExceptionExtension.ArgumentExceptionIfNullOrEmpty(_ip, "ip");
                 ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_port, "port");
                 ExceptionExtension.ArgumentExceptionIfLessThanOrEqualsToZero(_backlog, "backlog");
 

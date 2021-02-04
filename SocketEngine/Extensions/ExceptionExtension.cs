@@ -28,6 +28,12 @@ namespace SocketEngine.Extensions
                 throw new Exception(message);
         }
 
+        public static void ExceptionIfNullOrEmpty(string value, string message ="Exception thrown")
+        {
+            if (string.IsNullOrEmpty(value))
+                throw new Exception(message);
+        }
+
         public static void ArgumentExceptionIfTrue(bool value, string parameterName, string message = "")
         {
             if (value)
@@ -54,7 +60,7 @@ namespace SocketEngine.Extensions
                 throw new ArgumentNullException(parameterName);
         }
 
-        public static void ArgumentExceptionIsNullOrEmpty(string value, string parameterName)
+        public static void ArgumentExceptionIfNullOrEmpty(string value, string parameterName)
         {
             if (string.IsNullOrEmpty(value))
                 throw new ArgumentException($"{parameterName} is null or empty");

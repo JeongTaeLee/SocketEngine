@@ -7,7 +7,7 @@ using SocketEngine.Protocols;
 
 namespace SocketEngine.Async
 {
-    public sealed class AsyncSocketServer<TSessionBehavior, TRequestInfo> : SocketServer<TSessionBehavior, TRequestInfo>
+    public class AsyncSocketServer<TSessionBehavior, TRequestInfo> : SocketServer<TSessionBehavior, TRequestInfo>
         where TSessionBehavior : SocketSessionBehavior<TSessionBehavior, TRequestInfo>, new()
         where TRequestInfo : IRequestInfo
     {
@@ -15,7 +15,6 @@ namespace SocketEngine.Async
 
         private BufferManager _bufferManager = null;
         private SocketAsyncEventArgsProxyPool _socketEventProxyPool = null;
-
 
         private bool _alreadyUsed = false;
 
@@ -47,10 +46,9 @@ namespace SocketEngine.Async
             CreateSocket();
 
             _listener = new AsyncSocketListener(base.socket, config);
-            _listener.Start();
-
             _listener.accepted += Listener_Accepted;
             _listener.throwedException += Listener_ThrowedException;
+            _listener.Start();
         }
 
         public override void Close()
@@ -61,28 +59,143 @@ namespace SocketEngine.Async
             DisposeSocket();
         }
 
+        protected virtual void OnSessionStarted(TSessionBehavior behavior)
+        {
+
+        }
+
+        protected virtual void OnSessionClosed(TSessionBehavior behavior)
+        {
+
+        }
+
+        protected virtual void OnThrowedException(Exception ex)
+        {
+
+        }
+
+        protected virtual void OnThrowedExceptionFromBehavior(TSessionBehavior behavior, Exception ex)
+        {
+
+        }
+
+        private void SessionClosed(SocketSession<TSessionBehavior, TRequestInfo> socketSession)
+        {
+            try
+            {
+                if (socketSession == null)
+                {
+                    if (logger.IsErrorEnabled)
+                        logger.Error("socketSession is null");
+
+                    return;
+                }
+
+                OnSessionClosed(socketSession.behavior);
+
+                var asyncSocketSession = socketSession as AsyncSocketSession<TSessionBehavior, TRequestInfo>;
+                if (asyncSocketSession != null)
+                {
+                    if (logger.IsErrorEnabled)
+                        _socketEventProxyPool.Push(asyncSocketSession.socketEventProxy);
+                }
+                else
+                {
+                    if (logger.IsErrorEnabled)
+                        logger.Error("socketSession is not AsyncSocketSession");
+                }
+
+                var socket = socketSession.socket;
+                if (socket == null)
+                {
+                    if (logger.IsErrorEnabled)
+                        logger.Error("socket is null");
+                }
+
+                this.AsyncRun(socket.SafeClose);
+            }
+            catch (Exception ex)
+            {
+                if (logger.IsErrorEnabled)
+                    logger.Error("Exception thrown during Socket Closed process: ", ex);
+
+                OnThrowedException(ex);
+            }
+        }
+
+        private void SessionExceptionThrowed(TSessionBehavior behavior, Exception ex)
+        {
+            OnThrowedExceptionFromBehavior(behavior, ex);
+        }
 
         private void Listener_Accepted(Socket socket)
         {
             try
             {
-                //TODO @jeongtae.lee : Guid 발급 로직 생성하기
-                var sessionId = Guid.NewGuid().ToString();
+                SocketAsyncEventArgsProxy proxy = _socketEventProxyPool.Pop();
+                if (proxy == null)
+                {
+                    this.AsyncRun(socket.SafeClose);
 
-                var socketSession = new AsyncSocketSession<TSessionBehavior, TRequestInfo>();
-                socketSession.Initialize(sessionId, socket, this);
+                    if (logger.IsErrorEnabled)
+                        logger.ErrorFormat("Max connection number {0} was reached.", config.maxConnection);
+                    return;
+                }
 
-                AddSession(socketSession);
+                string sessionId = GenerateSessionId();
+                if (string.IsNullOrEmpty(sessionId))
+                {   
+                    _socketEventProxyPool.Push(proxy);
+                    this.AsyncRun(socket.SafeClose);
+
+                    if (logger.IsErrorEnabled)
+                        logger.Error("Failed to generate session ID.");
+                    return;
+                }
+
+                AsyncSocketSession<TSessionBehavior, TRequestInfo> asyuncSocketSession = new AsyncSocketSession<TSessionBehavior, TRequestInfo>(proxy);
+                if (!asyuncSocketSession.Initialize(sessionId, socket, this, SessionExceptionThrowed, SessionClosed))
+                {
+                    _socketEventProxyPool.Push(proxy);
+                    this.AsyncRun(socket.SafeClose);
+
+                    logger.Error("Socket session initialization failed");
+                    return;
+                }
+                
+                if (!AddSession(asyuncSocketSession))
+                {
+                    _socketEventProxyPool.Push(proxy);
+                    this.AsyncRun(socket.SafeClose);
+
+                    logger.Error("Failed to add socket to SocketSessionManager");
+                    return;
+                }
+                 
+                if (!asyuncSocketSession.Start())
+                {
+                    _socketEventProxyPool.Push(proxy);
+                    this.AsyncRun(socket.SafeClose);
+
+                    logger.Error("Failed to SocketSession Start");
+                    return;
+                }
+
+                OnSessionStarted(asyuncSocketSession.behavior);
             }
             catch (Exception ex)
             {
-                logger.Error("Exception thrown during Socket Acceptance process.", ex);
+                if (logger.IsErrorEnabled)
+                    logger.Error("Exception thrown during Socket Acceptance process: ", ex);
+                
+                OnThrowedException(ex);
             }
         }
 
         private void Listener_ThrowedException(Exception ex)
         {
-            logger.Error("Exception thrown to receiver.", ex);
+            if (logger.IsErrorEnabled)
+                logger.Error("Exception thrown to receiver: ", ex);
         }
     }
 }

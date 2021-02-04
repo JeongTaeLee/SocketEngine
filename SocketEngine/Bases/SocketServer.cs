@@ -7,16 +7,16 @@ using SocketEngine.Protocols;
 
 namespace SocketEngine.Bases
 {
-    public abstract class SocketServer<TSessionBehavior, TRequestInfo>
+    public abstract class SocketServer<TSessionBehavior, TRequestInfo> : ILoggerProvider
         where TSessionBehavior : SocketSessionBehavior<TSessionBehavior, TRequestInfo>, new()
         where TRequestInfo : IRequestInfo
     {
-        protected SocketServerConfig config { get; private set; } = null;
         protected Socket socket { get; private set; } = null;
-        protected ILogger logger { get; private set; } = null;
-
-        private ConcurrentDictionary<string, SocketSession<TSessionBehavior, TRequestInfo>> _sessionDict 
-            = new ConcurrentDictionary<string, SocketSession<TSessionBehavior, TRequestInfo>>();
+        
+        public SocketServerConfig config { get; private set; } = null;
+        public ILogger logger { get; private set; } = null;
+        
+        private SocketSessionManager<TSessionBehavior, TRequestInfo> _sessionManager = new SocketSessionManager<TSessionBehavior, TRequestInfo>();
 
         public SocketServer(SocketServerConfig config)
         {
@@ -25,14 +25,15 @@ namespace SocketEngine.Bases
             var logger = config.loggerFactory.GetLogger<SocketServer<TSessionBehavior, TRequestInfo>>();
             ExceptionExtension.ExceptionIfNull(logger, "Unable to get the logger from the loggerFactory.");
 
-            this.config = config;
             this.logger = logger; 
+            this.config = config;
+
         }
 
         public abstract void Start();
         public abstract void Close();
 
-        protected virtual void CreateSocket()
+        internal virtual void CreateSocket()
         {
             ExceptionExtension.ExceptionIfNoneNull(socket, "The socket has already been initialized.");
 
@@ -45,7 +46,7 @@ namespace SocketEngine.Bases
             socket.Listen(config.backlog);
         }
 
-        protected virtual void DisposeSocket()
+        internal virtual void DisposeSocket()
         {
             if (socket?.Connected ?? false)
                 socket.Disconnect(false);
@@ -54,17 +55,28 @@ namespace SocketEngine.Bases
             socket = null;
         }
 
-        internal void AddSession(SocketSession<TSessionBehavior, TRequestInfo> socketSession)
+        internal bool AddSession(SocketSession<TSessionBehavior, TRequestInfo> socketSession)
         {
-            ExceptionExtension.ArgumentNullExceptionIfNull(socketSession, "socketSession");
-            ExceptionExtension.ArgumentExceptionIsNullOrEmpty(socketSession.sessionId, "sessionId");
-            ExceptionExtension.ExceptionIfTrue(_sessionDict.ContainsKey(socketSession.sessionId), "This session has already been added.");
-            ExceptionExtension.ExceptionIfFalse(_sessionDict.TryAdd(socketSession.sessionId, socketSession), "Failed to add to session Dictionary");
+            if (socketSession == null)
+            {
+                logger.Error("SocketSession is null");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(socketSession.sessionId))
+            {
+                logger.Error("SessionId is null or empty");
+                return false;
+            }
+
+            return _sessionManager.AddSession(socketSession);
         }
 
-        internal void RemoveSession(SocketSession<TSessionBehavior, TRequestInfo> socketSession)
+        internal bool RemoveSession(SocketSession<TSessionBehavior, TRequestInfo> socketSession)
         {
-
+            return _sessionManager.RemoveSession(socketSession);
         }
+
+        internal string GenerateSessionId() => _sessionManager.GenerateSessionId();
     }
 }

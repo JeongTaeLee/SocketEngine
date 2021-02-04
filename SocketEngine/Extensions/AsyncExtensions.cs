@@ -6,12 +6,12 @@ namespace SocketEngine.Extensions
 {
     internal static class AsyncExtensions
     {
-        public static Task AsyncRun(this ILoggerProvider loggerProvider, Action task)
+        public static Task AsyncRun(this ILoggerProvider provider, Action task)
         {
-            return AsyncRun(loggerProvider, task, TaskCreationOptions.None);
+            return AsyncRun(provider, task, TaskCreationOptions.None);
         }
 
-        public static Task AsyncRun(this ILoggerProvider loggerProvider, Action task, TaskCreationOptions taskOption, Action<Exception> exceptionHandler = null)
+        public static Task AsyncRun(this ILoggerProvider provider, Action task, TaskCreationOptions taskOption, Action<Exception> exceptionHandler = null)
         {
             return Task.Run(task).ContinueWith((t) =>
             {
@@ -19,11 +19,11 @@ namespace SocketEngine.Extensions
                     exceptionHandler.Invoke(t.Exception);
                 else
                 {
-                    if (loggerProvider.logger.IsErrorEnabled)
+                    if (provider.logger.IsErrorEnabled)
                     {
                         for (var i = 0; i < t.Exception.InnerExceptions.Count; i++)
                         {
-                            loggerProvider.logger.Error(t.Exception.InnerExceptions[i]);
+                            provider.logger.Error(t.Exception.InnerExceptions[i]);
                         }
                     }
                 }

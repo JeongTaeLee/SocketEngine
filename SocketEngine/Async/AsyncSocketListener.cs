@@ -118,6 +118,7 @@ namespace SocketEngine.Async
                 _logger.Error($"AcceptSocket is null");
                 return;
             }
+
             // 소켓 설정.
             if (_config.sendTimeOut > 0)
                 newSocket.SendTimeout = _config.sendTimeOut;
