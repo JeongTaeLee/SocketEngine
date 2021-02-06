@@ -9,3 +9,4 @@ C:\Projects\SocketEngine\SocketEngine\obj\Release\net5.0\SocketEngine.csproj.Cor
 C:\Projects\SocketEngine\SocketEngine\obj\Release\net5.0\SocketEngine.dll
 C:\Projects\SocketEngine\SocketEngine\obj\Release\net5.0\ref\SocketEngine.dll
 C:\Projects\SocketEngine\SocketEngine\obj\Release\net5.0\SocketEngine.pdb
+C:\Projects\SocketEngine\SocketEngine\obj\Release\net5.0\SocketEngine.csprojAssemblyReference.cache

@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "dgSpecHash": "sXwPHUl/iJkpJbX0Pz+dPH1GYh7+vNljqkAEv4krALO3WIcLo2CjYjzRE35SPWUVzVxgl2LoiQtJLWiNSJo+Aw==",
+  "success": true,
+  "projectFilePath": "C:\\Projects\\SocketEngine\\TestServer\\TestServer.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\jeongtae.lee\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\5.0.0\\microsoft.extensions.configuration.abstractions.5.0.0.nupkg.sha512",
+    "C:\\Users\\jeongtae.lee\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\5.0.0\\microsoft.extensions.dependencyinjection.5.0.0.nupkg.sha512",
+    "C:\\Users\\jeongtae.lee\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\5.0.0\\microsoft.extensions.dependencyinjection.abstractions.5.0.0.nupkg.sha512",
+    "C:\\Users\\jeongtae.lee\\.nuget\\packages\\microsoft.extensions.logging\\5.0.0\\microsoft.extensions.logging.5.0.0.nupkg.sha512",
+    "C:\\Users\\jeongtae.lee\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\5.0.0\\microsoft.extensions.logging.abstractions.5.0.0.nupkg.sha512",
+    "C:\\Users\\jeongtae.lee\\.nuget\\packages\\microsoft.extensions.options\\5.0.0\\microsoft.extensions.options.5.0.0.nupkg.sha512",
+    "C:\\Users\\jeongtae.lee\\.nuget\\packages\\microsoft.extensions.primitives\\5.0.0\\microsoft.extensions.primitives.5.0.0.nupkg.sha512",
+    "C:\\Users\\jeongtae.lee\\.nuget\\packages\\nlog\\4.7.6\\nlog.4.7.6.nupkg.sha512",
+    "C:\\Users\\jeongtae.lee\\.nuget\\packages\\nlog.extensions.logging\\1.7.0\\nlog.extensions.logging.1.7.0.nupkg.sha512"
+  ],
+  "logs": []
+}
