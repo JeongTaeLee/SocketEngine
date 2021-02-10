@@ -1,26 +1,26 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using SocketEngine.Extensions;
-using SocketEngine.Servers;
+using SocketEngine.Sockets;
 
 namespace SocketEngine.Commons
 {
     internal class SessionManager
     {
-        private ConcurrentDictionary<string, BaseSession> _sessions = new ConcurrentDictionary<string, BaseSession>();
+        private ConcurrentDictionary<string, IAppSession> _sessions = new ConcurrentDictionary<string, IAppSession>();
 
-        public bool AddSession(BaseSession session)
+        public bool AddSession(IAppSession session)
         {
-            ExceptionExtension.ArgumentNullExceptionIfNull(session, "session");
-            ExceptionExtension.ArgumentExceptionIfNullOrEmpty(session.sessionId, "session.sessionId");
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            if (string.IsNullOrEmpty(session.sessionId)) throw new ArgumentNullException(nameof(session.sessionId));
 
             return _sessions.TryAdd(session.sessionId, session);
         }
 
-        public bool RemoveSession(BaseSession session)
+        public bool RemoveSession(IAppSession session)
         {
-            ExceptionExtension.ArgumentNullExceptionIfNull(session, "session");
-            ExceptionExtension.ArgumentExceptionIfNullOrEmpty(session.sessionId, "session.sessionId");
+            if (session == null) throw new ArgumentNullException(nameof(session));
+            if (string.IsNullOrEmpty(session.sessionId)) throw new ArgumentNullException(nameof(session.sessionId));
 
             return _sessions.TryRemove(session.sessionId, out var temp);
         }

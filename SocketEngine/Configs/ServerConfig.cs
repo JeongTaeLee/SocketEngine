@@ -1,24 +1,39 @@
 ﻿using SocketEngine.Extensions;
 using System.Net.Sockets;
 
-namespace SocketEngine.Servers.Configs
+namespace SocketEngine.Configs
 {
     public class ServerConfig
     {
+        #region Default Value
+        public const int DefaultBacklog = 1000;
+        
+        public const ProtocolType DefaultProtocolType = ProtocolType.Tcp;
+        public const SocketType DefaultSocketType = SocketType.Stream;
+
+        public const int DefaultMaxConnection = 1000;
+        public const int DefaultReceiveBufferSize = 1024;
+        public const int DefaultSendBufferSize = 1024;
+        public const int DefaultSendTimeOut = 5000;
+        public const bool DefaultKeepAliveEnable = true;
+        public const int DefaultKeepAliveTime = 600;
+        public const int DefaultKeepAliveInterval = 60;
+        #endregion
+
         public readonly string ip = string.Empty;
         public readonly int port = 0;
-        public readonly int backlog = 10;
-        public readonly ProtocolType protocolType = ProtocolType.Tcp;
-        public readonly SocketType socketType = SocketType.Stream;
+        public readonly int backlog = DefaultBacklog;
+        public readonly ProtocolType protocolType = DefaultProtocolType;
+        public readonly SocketType socketType = DefaultSocketType;
 
-        public readonly int maxConnection = 100;
-        public readonly int receiveBufferSize = 1024;
-        public readonly int sendBufferSize = 1024;
-        public readonly int sendTimeOut = 5000;
+        public readonly int maxConnection = DefaultMaxConnection;
+        public readonly int receiveBufferSize = DefaultReceiveBufferSize;
+        public readonly int sendBufferSize = DefaultSendBufferSize;
+        public readonly int sendTimeOut = DefaultSendTimeOut;
 
-        public readonly bool keepAliveEnable = true;
-        public readonly int keepAliveTime = 600;
-        public readonly int keepAliveInterval = 60;
+        public readonly bool keepAliveEnable = DefaultKeepAliveEnable;
+        public readonly int keepAliveTime = DefaultKeepAliveTime;
+        public readonly int keepAliveInterval = DefaultKeepAliveInterval;
 
         private ServerConfig(string ip,
             int port,
@@ -52,24 +67,23 @@ namespace SocketEngine.Servers.Configs
         {
             private string _ip = string.Empty;
             private int _port = 0;
-            private int _backlog = 10;
-            private SocketType _socketType = SocketType.Stream;
-            private ProtocolType _protocolType = ProtocolType.Tcp;
+            private int _backlog = DefaultBacklog;
+            private SocketType _socketType = DefaultSocketType;
+            private ProtocolType _protocolType = DefaultProtocolType;
 
-            private int _maxConnection = 100;
-            private int _receiveBufferSize = 1024;
-            private int _sendBufferSize = 1024;
-            private int _sendTimeOut = 5000;
+            private int _maxConnection = DefaultMaxConnection;
+            private int _receiveBufferSize = DefaultReceiveBufferSize;
+            private int _sendBufferSize = DefaultSendBufferSize;
+            private int _sendTimeOut = DefaultSendTimeOut;
 
-            private bool _keepAliveEnable = true;
-            private int _keepAliveTime = 600;
-            private int _keepAliveInterval = 60;
+            private bool _keepAliveEnable = DefaultKeepAliveEnable;
+            private int _keepAliveTime = DefaultKeepAliveTime;
+            private int _keepAliveInterval = DefaultKeepAliveInterval;
 
-            public Builder(string ip, int port, int backlog)
+            public Builder(string ip, int port)
             {
                 _ip = ip;
                 _port = port;
-                _backlog = backlog;
             }
 
             public ServerConfig Build()
@@ -92,6 +106,12 @@ namespace SocketEngine.Servers.Configs
 
                 return new ServerConfig(_ip, _port, _backlog, _protocolType, _socketType,
                     _maxConnection, _receiveBufferSize, _sendBufferSize, _sendTimeOut, _keepAliveEnable, _keepAliveTime, _keepAliveInterval);
+            }
+
+            public Builder SetBacklog(int backlog)
+            {
+                _backlog = backlog;
+                return this;
             }
 
             public Builder SetSocketType(SocketType socketType)

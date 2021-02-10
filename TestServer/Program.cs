@@ -20,7 +20,7 @@ namespace TestServer
             logFactroy = new NLogLoggerFactory("./NLog.config");
 #endif
 
-            ServerConfig config = new ServerConfig.Builder("127.0.0.1", 9199, 1000000)
+            ServerConfig config = new ServerConfig.Builder("127.0.0.1", 9199)
                 .SetMaxConnection(1000000)
                 .SetReceiveBufferSize(2048)
                 .SetSendBufferSize(2048)
