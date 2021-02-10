@@ -1,4 +1,0 @@
-02.06.2021 21:10:06.916 | NLogLogger.Info | Info | Start listening - Ip(127.0.0.1), Port(9199), Backlog(1000000), SocketType(Stream), ProtocolType(Tcp) 
-02.06.2021 21:10:50.505 | NLogLogger.Info | Info | Start listening - Ip(127.0.0.1), Port(9199), Backlog(1000000), SocketType(Stream), ProtocolType(Tcp) 
-02.06.2021 21:11:04.162 | NLogLogger.Info | Info | Start listening - Ip(127.0.0.1), Port(9199), Backlog(1000000), SocketType(Stream), ProtocolType(Tcp) 
-02.06.2021 21:11:14.715 | NLogLogger.Info | Info | Start listening - Ip(127.0.0.1), Port(9199), Backlog(1000000), SocketType(Stream), ProtocolType(Tcp) 
