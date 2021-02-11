@@ -100,6 +100,7 @@ namespace SocketEngine.Sockets.Asyncs
                 
                 // TODO @jeongtae.lee : App session 초기화 구현
                 var appSession = appServer.CreateAppSession();
+                appSession.Initialize(string.Empty, null);
             }
             catch (Exception ex)
             {
