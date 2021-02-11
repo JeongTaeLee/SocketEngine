@@ -5,20 +5,24 @@ using SocketEngine.Protocols;
 
 namespace SocketEngine
 {
-    interface IAppSession : ILoggerProvider
+    public interface IAppSession : ILoggerProvider
     {
         string sessionId { get; }
 
         ISocketSession socketSession { get; }
 
         bool Initialize(string sessionId, ISocketSession socketSession);
+
+        void Close();
+
+        void OnSessionStarted();
+        void OnSessionClosed();
+        void OnReceive(IRequestInfo info);
     }
 
-    interface IAppSession<TRequestInfo> : IAppSession
+    public interface IAppSession<TRequestInfo> : IAppSession
         where TRequestInfo : IRequestInfo
     {
-
-        void OnReceive(TRequestInfo info);
     }
 
 }

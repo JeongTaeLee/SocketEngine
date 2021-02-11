@@ -16,13 +16,14 @@ namespace SocketEngine.Sockets.Asyncs
             this.recvEventArgs = recvEventArgs;
         }
 
-        public override bool Start()
+        public override void Start()
         {
             StartRecv(recvEventArgs);
-            return true;
+
+            StartSession();
         }
 
-        public override void End()
+        public override void Close()
         {
 
         }
@@ -55,7 +56,7 @@ namespace SocketEngine.Sockets.Asyncs
             }
             else
             {
-                this.End();
+                this.Close();
             }
         }
     }

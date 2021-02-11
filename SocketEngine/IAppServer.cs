@@ -5,7 +5,7 @@ using SocketEngine.Configs;
 
 namespace SocketEngine
 {
-    interface IAppServer : ILoggerProvider
+    public interface IAppServer : ILoggerProvider
     {
         ILoggerFactory loggerFactroy { get; }
 
@@ -14,8 +14,12 @@ namespace SocketEngine
         ISocketServer socketServer { get;  }
 
         void Start();
-        void End();
+        void Close();
 
+        bool AddSession(IAppSession appSession);
+        bool RemoveSession(IAppSession appSession);
+
+        string CreateSessionId();
         IAppSession CreateAppSession();
         ILogger CreateLogger<T>() where T : class;
         ILogger CreateLogger(string name);
@@ -24,7 +28,7 @@ namespace SocketEngine
     interface IAppServer<TAppSession> : IAppServer
         where TAppSession : IAppSession
     {
-        void OnSessionConnect(TAppSession appSession);
-        void OnSessionDisconnect(TAppSession appSession);
+        void OnSessionConnected(TAppSession appSession);
+        void OnSessionDisconnected(TAppSession appSession);
     }
 }

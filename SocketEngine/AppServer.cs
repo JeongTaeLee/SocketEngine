@@ -3,17 +3,20 @@ using SocketEngine.Extensions;
 using SocketEngine.Logging;
 using SocketEngine.Configs;
 using SocketEngine.Sockets;
+using SocketEngine.Commons;
 
 namespace SocketEngine
 {
-    abstract partial class AppServer<TAppSession> : IAppServer<TAppSession>
-        where TAppSession : IAppSession, new()
+    public abstract partial class AppServer<TAppSession> : IAppServer<TAppSession>
+        where TAppSession : class, IAppSession, new()
     {
         public ServerConfig config { get; private set; } = null;
         public ISocketServer socketServer { get; private set; } = null;
 
         public ILoggerFactory loggerFactroy { get; private set; } = null;        
         public ILogger logger { get; private set; } = null;
+
+        private SessionManager _sessionManager = null;
 
         public AppServer(ServerConfig serverConfig, ISocketServer socketServer, ILoggerFactory loggerFactroy)
         {
@@ -28,11 +31,39 @@ namespace SocketEngine
             this.loggerFactroy = loggerFactroy;
             this.socketServer = socketServer;
             this.logger = logger;
+
+            _sessionManager = new SessionManager();
         }
 
-        public IAppSession CreateAppSession()
+        bool IAppServer.AddSession(IAppSession appSession)
+        {
+            var session = appSession as TAppSession;
+            if (session == null)
+                return false;
+
+            if (!_sessionManager.AddSession(session))
+            {
+                return false;
+            }
+
+            OnSessionConnected(session);
+
+            return true;
+        }
+
+        bool IAppServer.RemoveSession(IAppSession appSession)
+        {
+            return _sessionManager.RemoveSession(appSession);
+        }
+
+        IAppSession IAppServer.CreateAppSession()
         {
             return new TAppSession();
+        }
+
+        string IAppServer.CreateSessionId()
+        {
+            return _sessionManager.GenerateSessionId();   
         }
 
         public ILogger CreateLogger<T>()
@@ -49,7 +80,7 @@ namespace SocketEngine
         }
     }
 
-    abstract partial class AppServer<TAppSession>
+    public abstract partial class AppServer<TAppSession>
     {
 
         public virtual void Start()
@@ -63,13 +94,13 @@ namespace SocketEngine
             socketServer.Start();
         }
 
-        public virtual void End()
+        public virtual void Close()
         {
 
         }
 
-        public abstract void OnSessionConnect(TAppSession appSession);
-        public abstract void OnSessionDisconnect(TAppSession appSession);
+        public abstract void OnSessionConnected(TAppSession appSession);
+        public abstract void OnSessionDisconnected(TAppSession appSession);
     }
 
 }

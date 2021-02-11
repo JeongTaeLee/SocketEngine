@@ -1,9 +1,33 @@
-﻿using NLog;
-using SocketEngine.Logging;
-using System;
+﻿using System;
+using SocketEngine;
+
 
 namespace TestServer
 {
+    class TestSession : AppSession
+    {
+
+    }
+
+    class TestServer : AppServer<AppSession>
+    {
+        public TestServer()
+            :base(null, null, null)
+        {
+
+        }
+
+        public override void OnSessionConnected(AppSession appSession)
+        {
+
+        }
+
+        public override void OnSessionDisconnected(AppSession appSession)
+        {
+        
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)

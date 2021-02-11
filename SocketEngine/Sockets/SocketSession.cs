@@ -23,7 +23,12 @@ namespace SocketEngine.Sockets
             return true;
         }
 
-        public abstract bool Start();
-        public abstract void End();
+        public abstract void Start();
+        public abstract void Close();
+
+        protected void StartSession()
+        {
+            appSession.OnSessionStarted();
+        }
     }
 }

@@ -5,7 +5,7 @@ using SocketEngine.Logging;
 
 namespace SocketEngine.Sockets
 {
-    interface ISocketServer : ILoggerProvider
+    public interface ISocketServer : ILoggerProvider
     {
         IAppServer appServer { get; }
 

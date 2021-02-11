@@ -5,8 +5,7 @@ using SocketEngine.Sockets;
 
 namespace SocketEngine
 {
-    class AppSession<TRequestInfo> : IAppSession<TRequestInfo>
-        where TRequestInfo : IRequestInfo
+    public class AppSession : IAppSession
     {
         public string sessionId { get; private set; } = null;
         public ISocketSession socketSession { get; private set; } = null;
@@ -24,9 +23,21 @@ namespace SocketEngine
             return false;
         }
 
-        public virtual void OnReceive(TRequestInfo info)
+        public void Close()
         {
+            socketSession.Close();
+        }
 
+        public virtual void OnSessionStarted()
+        {
+        }
+
+        public virtual void OnSessionClosed()
+        {
+        }
+
+        public virtual void OnReceive(IRequestInfo info)
+        {
         }
     }
 }

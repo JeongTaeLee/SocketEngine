@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace SocketEngine.Sockets
 {
-    interface ISocketSession
+    public interface ISocketSession
     {
         public delegate void ExceptionHandler(Exception ex);
         public delegate void CloseHandler(ISocketSession session);
@@ -12,10 +12,10 @@ namespace SocketEngine.Sockets
 
         Socket socket { get; }
 
-        ExceptionHandler exceptionHandler { get; }
+        CloseHandler close { get; }
 
-        bool Start();
-        void End();
+        void Start();
+        void Close();
 
     }
 }

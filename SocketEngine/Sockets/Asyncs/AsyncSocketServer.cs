@@ -71,7 +71,6 @@ namespace SocketEngine.Sockets.Asyncs
 
             try
             {
-
                 // 소켓 옵션 설정.
                 if (config.sendTimeOut > 0)
                     socket.SendTimeout = config.sendTimeOut;
@@ -84,7 +83,7 @@ namespace SocketEngine.Sockets.Asyncs
 
                 //TODO @jeongtae.lee : 지원 여부 알아보기 (IOControl와 함께)
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, _keepAliveOptionValue);
-                socket.NoDelay = true; // Nagle() 알고리즘 적용 여부(TRUE : 적용하지 않음). 패킷을 모아서 보낼 것인지 설정하는 옵션 즉각적인 응답이 중요한 곳에서는 사용하지 않는다)
+                socket.NoDelay = true; // Nagle 알고리즘 적용 여부(TRUE : 적용하지 않음). 패킷을 모아서 보낼 것인지 설정하는 옵션 즉각적인 응답이 중요한 곳에서는 사용하지 않는다)
                 socket.LingerState = new LingerOption(true, 0); // 두번째 인자가 0이면 close 호출 시 버퍼에 남아있는 모든 송수신 데이터를 버리고 즉시 종료한다.
 
                 var socketEvent = _recvSocketEventPool.Pop();
@@ -97,10 +96,73 @@ namespace SocketEngine.Sockets.Asyncs
                     
                     return;
                 }
-                
+
+                var sessionId = appServer.CreateSessionId();
+                if (string.IsNullOrEmpty(sessionId))
+                {
+                    this.AsyncRun(socket.Close);
+
+                    if (logger.IsErrorEnabled)
+                    {
+                        logger.ErrorFormat("Failed to create session ID.");
+                    }
+
+                    return;
+                }
+
                 // TODO @jeongtae.lee : App session 초기화 구현
                 var appSession = appServer.CreateAppSession();
-                appSession.Initialize(string.Empty, null);
+                if (appSession == null)
+                {
+                    this.AsyncRun(socket.Close);
+
+                    if (logger.IsErrorEnabled)
+                    {
+                        logger.ErrorFormat("Failed to create AppSession");
+                    }
+
+                    return;
+                }
+
+                var socketSession = new AsyncSocketSession(socketEvent);
+                if (!socketSession.Initialize(appSession, socket))
+                {
+                    this.AsyncRun(socket.Close);
+
+                    if (logger.IsErrorEnabled)
+                    {
+                        logger.ErrorFormat("Failed to initialize AsyncSocketSession");
+                    }
+
+                    return; 
+                }
+
+                if (!appSession.Initialize(sessionId, socketSession))
+                {
+                    this.AsyncRun(socket.Close);
+
+                    if (logger.IsErrorEnabled)
+                    {
+                        logger.ErrorFormat("Failed to initialize AppSession");
+                    }
+
+                    return;
+                }
+
+                if (!appServer.AddSession(appSession))
+                {
+                    this.AsyncRun(socket.Close);
+
+                    if (logger.IsErrorEnabled)
+                    {
+                        logger.ErrorFormat("Failed to add app session to app server.");
+                    }
+
+                    return;
+                }
+
+
+                appServer.AsyncRun(socketSession.Start);
             }
             catch (Exception ex)
             {
