@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Collections.Generic;
 using SocketEngine.Extensions;
-using SocketEngine.Configs;
 using SocketEngine.Logging;
 
 namespace SocketEngine.Sockets
@@ -10,46 +10,77 @@ namespace SocketEngine.Sockets
     abstract class SocketServer<TSocketServer> : ISocketServer
         where TSocketServer : SocketServer<TSocketServer>
     {
-        public IAppServer appServer { get; private set; } = null;
-
-        public ServerConfig config { get; private set; } = null;
-        public Socket socket { get; private set; } = null;
+        protected IAppServer appServer { get; private set; } = null;
+        protected Socket socket { get; private set; } = null;
+        protected IReadOnlyList<ISocketListener> listeners { get; private set; } = null;
 
         public ILogger logger { get; private set; } = null;
+        
 
-        public void Initialize(IAppServer appServer, ServerConfig serverConfig)
+        public SocketServer(IAppServer appServer)
         {
             if (appServer == null) throw new ArgumentNullException(nameof(appServer));
-            if (serverConfig == null) throw new ArgumentNullException(nameof(serverConfig));
 
-            var logger = appServer.CreateLogger<TSocketServer>();
-            if (logger == null) throw new Exception("Can't get logger from logger factroy.");
-            
             this.appServer = appServer;
-            this.config = serverConfig;
-            this.logger = logger;
         }
 
         public virtual void Start()
         {
-            if (appServer == null) throw new Exception("App server is not set");
-            if (config == null) throw new Exception("Server config is not set");
-
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(config.ip);
-            IPAddress ipAddress = ipHostInfo.AddressList[0];
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, config.port);
-
-            socket = new Socket(ipAddress.AddressFamily, config.socketType, config.protocolType);
-            socket.Bind(localEndPoint);
-            socket.Listen(config.backlog);
+            StartListeners();
         }
 
-        public virtual void End()
+        public virtual void Close()
         {
-            this.socket.Close();
+            this.socket.SafeClose();
             this.socket = null;
-
-            this.config = null;
         }
+
+        private void StartListeners()
+        {
+            List<ISocketListener> listeners = new List<ISocketListener>();
+
+            var config = appServer.config;
+
+            if (config.listenerConfigs == null || 0 >= config.listenerConfigs.Count)
+            {
+                throw new Exception("Listener list wrong");
+            }
+            
+            for (int index = 0; index < config.listenerConfigs.Count; ++index)
+            {
+                var listenerConfig = config.listenerConfigs[index];
+                if (listenerConfig == null)
+                {
+                    throw new Exception($"Listener({index}) is null");
+                }
+
+                if (string.IsNullOrEmpty(listenerConfig.ip))
+                {
+                    throw new Exception($"Listener({index}) ip is invalid");
+                }
+
+                if (0 >= listenerConfig.port)
+                {
+                    throw new Exception($"Listener({index}) port is invalid");
+                }
+
+                var endPoint = new IPEndPoint(SocketExtensions.ParseIPAddress(listenerConfig.ip), listenerConfig.port);
+
+                var listenerInfo = new ListenerInfo(endPoint, listenerConfig.backlog);
+                
+                var socketListener = CreateListener(listenerInfo);
+                socketListener.accepted += new ISocketListener.AcceptHandler(OnSocketAccepted);
+                socketListener.error += new ISocketListener.ErrorHandler(OnListenerError);
+
+                socketListener.Start();
+            }
+
+            this.listeners = listeners;
+        }
+
+        protected abstract void OnSocketAccepted(ISocketListener listener, Socket socket);
+        protected abstract void OnListenerError(ISocketListener listener, Exception ex);
+
+        protected abstract ISocketListener CreateListener(ListenerInfo info);
     }
 }

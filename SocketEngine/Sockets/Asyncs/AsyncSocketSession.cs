@@ -5,7 +5,7 @@ using SocketEngine.Extensions;
 namespace SocketEngine.Sockets.Asyncs
 {
     class AsyncSocketSession : SocketSession
-    {
+    {    
         private SocketAsyncEventArgs recvEventArgs = null;
         private SocketAsyncEventArgs sendEventArgs = null;
 
@@ -14,6 +14,7 @@ namespace SocketEngine.Sockets.Asyncs
             if (recvEventArgs == null) throw new ArgumentNullException(nameof(recvEventArgs));
             
             this.recvEventArgs = recvEventArgs;
+            this.recvEventArgs.UserToken = this;
         }
 
         public override void Start()
@@ -25,7 +26,7 @@ namespace SocketEngine.Sockets.Asyncs
 
         public override void Close()
         {
-
+            base.Close();
         }
 
         private void StartRecv(SocketAsyncEventArgs args)
@@ -38,7 +39,7 @@ namespace SocketEngine.Sockets.Asyncs
             }
             catch (Exception ex)
             {
-                exceptionHandler?.Invoke(ex);
+                appSession.HandleException(ex);
             }
         }
 
@@ -56,7 +57,7 @@ namespace SocketEngine.Sockets.Asyncs
             }
             else
             {
-                this.Close();
+               
             }
         }
     }

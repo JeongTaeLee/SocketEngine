@@ -1,4 +1,6 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace SocketEngine.Extensions
 {
@@ -21,7 +23,16 @@ namespace SocketEngine.Extensions
                 socket.Close();
             }
             catch { }
+        }
 
+        public static IPAddress ParseIPAddress(string ip)
+        {
+            if (string.IsNullOrEmpty(ip) || "Any".Equals(ip, StringComparison.OrdinalIgnoreCase))
+                return IPAddress.Any;
+            else if ("IPv6Any".Equals(ip, StringComparison.OrdinalIgnoreCase))
+                return IPAddress.IPv6Any;
+            else
+                return IPAddress.Parse(ip);
         }
     }
 }

@@ -12,14 +12,13 @@ namespace TestServer
     class TestServer : AppServer<AppSession>
     {
         public TestServer()
-            :base(null, null, null)
         {
 
         }
 
         public override void OnSessionConnected(AppSession appSession)
         {
-
+            
         }
 
         public override void OnSessionDisconnected(AppSession appSession)

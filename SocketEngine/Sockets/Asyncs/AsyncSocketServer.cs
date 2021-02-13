@@ -10,21 +10,28 @@ namespace SocketEngine.Sockets.Asyncs
 {
     class AsyncSocketServer : SocketServer<AsyncSocketServer>
     {
-        private AsyncSocketListener _listener = null;
+        private byte[] _keepAliveOptionValue = null;
 
         private BufferManager _bufferManager = null;
         private SocketAsyncEventArgsPool _recvSocketEventPool = null;
 
-        private byte[] _keepAliveOptionValue = null;
 
-        public AsyncSocketServer()
+        public AsyncSocketServer(IAppServer appServer)
+            : base(appServer)
         {
 
         }
 
         public override void Start()
         {
-            base.Start();
+            var config = appServer.config;
+
+            // KeepAvlie 생성
+            uint dummy = 0;
+            _keepAliveOptionValue = new byte[Marshal.SizeOf(dummy) * 3];
+            BitConverter.GetBytes((uint)(config.keepAliveEnable ? 1 : 0)).CopyTo(_keepAliveOptionValue, 0);
+            BitConverter.GetBytes((uint)(config.keepAliveTime * 1000)).CopyTo(_keepAliveOptionValue, Marshal.SizeOf(dummy));
+            BitConverter.GetBytes((uint)(config.keepAliveInterval * 1000)).CopyTo(_keepAliveOptionValue, Marshal.SizeOf(dummy) * 2);
 
             // 버퍼 매니저 생성.
             _bufferManager = new BufferManager(config.maxConnection * config.receiveBufferSize, config.receiveBufferSize);
@@ -41,36 +48,23 @@ namespace SocketEngine.Sockets.Asyncs
 
             _recvSocketEventPool = new SocketAsyncEventArgsPool(socketEvents);
 
-            // KeepAvlie 생성
-            uint dummy = 0;
-            _keepAliveOptionValue = new byte[Marshal.SizeOf(dummy) * 3];
-            BitConverter.GetBytes((uint)(config.keepAliveEnable ? 1 : 0)).CopyTo(_keepAliveOptionValue, 0);
-            BitConverter.GetBytes((uint)(config.keepAliveTime * 1000)).CopyTo(_keepAliveOptionValue, Marshal.SizeOf(dummy));
-            BitConverter.GetBytes((uint)(config.keepAliveInterval * 1000)).CopyTo(_keepAliveOptionValue, Marshal.SizeOf(dummy) * 2);
-
-            // 리스너 생성
-            this._listener = new AsyncSocketListener(socket, this);
-            this._listener.accepted = OnSocketAccept;
-            this._listener.throwedException = OnThrowException;
-
-            _listener.Start();
+            base.Start();
         }
 
-        public override void End()
+        public override void Close()
         {
-            _listener.Close();
-            _listener = null;
-
-            base.End();
+            base.Close();
         }
 
-        private void OnSocketAccept(Socket socket)
+        protected override void OnSocketAccepted(ISocketListener listener, Socket socket)
         {
             if (socket == null)
                 return;
 
             try
             {
+                var config = appServer.config;
+
                 // 소켓 옵션 설정.
                 if (config.sendTimeOut > 0)
                     socket.SendTimeout = config.sendTimeOut;
@@ -110,7 +104,6 @@ namespace SocketEngine.Sockets.Asyncs
                     return;
                 }
 
-                // TODO @jeongtae.lee : App session 초기화 구현
                 var appSession = appServer.CreateAppSession();
                 if (appSession == null)
                 {
@@ -161,7 +154,6 @@ namespace SocketEngine.Sockets.Asyncs
                     return;
                 }
 
-
                 appServer.AsyncRun(socketSession.Start);
             }
             catch (Exception ex)
@@ -170,9 +162,14 @@ namespace SocketEngine.Sockets.Asyncs
             }
         }
 
-        private void OnThrowException(Exception ex)
+        protected override void OnListenerError(ISocketListener listener, Exception ex)
         {
+            appServer.logger.Error(ex);
+        }
 
+        protected override ISocketListener CreateListener(ListenerInfo info)
+        {
+            return new AsyncSocketListener(info);
         }
     }
 }

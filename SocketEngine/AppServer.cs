@@ -4,34 +4,22 @@ using SocketEngine.Logging;
 using SocketEngine.Configs;
 using SocketEngine.Sockets;
 using SocketEngine.Commons;
+using SocketEngine.Sockets.Asyncs;
 
 namespace SocketEngine
 {
     public abstract partial class AppServer<TAppSession> : IAppServer<TAppSession>
         where TAppSession : class, IAppSession, new()
     {
-        public ServerConfig config { get; private set; } = null;
-        public ISocketServer socketServer { get; private set; } = null;
-
-        public ILoggerFactory loggerFactroy { get; private set; } = null;        
-        public ILogger logger { get; private set; } = null;
-
+        private ISocketServer _socketServer = null;
+        private ILoggerFactory _loggerFactroy = null;        
         private SessionManager _sessionManager = null;
 
-        public AppServer(ServerConfig serverConfig, ISocketServer socketServer, ILoggerFactory loggerFactroy)
+        public IServerConfig config { get; private set; } = null;
+        public ILogger logger { get; private set; } = null;
+        
+        public AppServer()
         {
-            if (serverConfig == null) throw new ArgumentNullException(nameof(serverConfig));
-            if (socketServer == null) throw new ArgumentNullException(nameof(socketServer));
-            if (loggerFactroy == null) throw new ArgumentNullException(nameof(loggerFactroy));
-
-            var logger = loggerFactroy.GetLogger("AppServer");
-            if (logger == null) throw new Exception("Can't get logger from logger factroy.");
-            
-            this.config = serverConfig;
-            this.loggerFactroy = loggerFactroy;
-            this.socketServer = socketServer;
-            this.logger = logger;
-
             _sessionManager = new SessionManager();
         }
 
@@ -66,41 +54,75 @@ namespace SocketEngine
             return _sessionManager.GenerateSessionId();   
         }
 
+        private ISocketServer CreateSocketServer()
+        {
+            if (config.socketMode == SocketMode.Tcp)
+            {
+                return new AsyncSocketServer(this);
+            }
+
+            return null;
+        }
+
         public ILogger CreateLogger<T>()
             where T : class
         {
-            if (loggerFactroy == null) throw new Exception("Logger facotry is null");
-            return loggerFactroy.GetLogger<T>();
+            if (_loggerFactroy == null) throw new Exception("Logger facotry is null");
+            return _loggerFactroy.GetLogger<T>();
         }
 
         public ILogger CreateLogger(string name)
         {
-            if (loggerFactroy == null) throw new Exception("Logger factroy is null");
-            return loggerFactroy.GetLogger(name);
+            if (_loggerFactroy == null) throw new Exception("Logger factroy is null");
+            return _loggerFactroy.GetLogger(name);
         }
+
     }
 
     public abstract partial class AppServer<TAppSession>
     {
+        public virtual void SetUp(IServerConfig serverConfig, ILoggerFactory loggerFactroy)
+        {
+            if (serverConfig == null) throw new ArgumentNullException(nameof(serverConfig));
+            if (loggerFactroy == null) throw new ArgumentNullException(nameof(loggerFactroy));
+
+            this.config = serverConfig;
+            this._loggerFactroy = loggerFactroy;
+        }
 
         public virtual void Start()
         {
             if (config == null) throw new Exception("Logger factory is not set");
-            if (socketServer == null) throw new Exception("Socket server is not set");
-            if (loggerFactroy == null) throw new Exception("Logger factroy is not set");
-            if (logger == null) throw new Exception("Logger is not set");
+            if (_loggerFactroy == null) throw new Exception("Logger factroy is not set");
 
-            socketServer.Initialize(this, config);
-            socketServer.Start();
+            logger = CreateLogger("AppServer");
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
+            
+            _socketServer = CreateSocketServer();
+            if (_socketServer == null) throw new Exception("Failed to create socket server");
+
+            _socketServer.Start();
         }
 
         public virtual void Close()
         {
+            _socketServer.Close();
+        }
+
+        public virtual void OnSessionConnected(TAppSession appSession)
+        {
 
         }
 
-        public abstract void OnSessionConnected(TAppSession appSession);
-        public abstract void OnSessionDisconnected(TAppSession appSession);
+        public virtual void OnSessionDisconnected(TAppSession appSession)
+        {
+
+        }
+
+        public virtual void HandleException(Exception ex)
+        {
+
+        }
     }
 
 }

@@ -9,8 +9,6 @@ namespace SocketEngine
     {
         string sessionId { get; }
 
-        ISocketSession socketSession { get; }
-
         bool Initialize(string sessionId, ISocketSession socketSession);
 
         void Close();
@@ -18,6 +16,7 @@ namespace SocketEngine
         void OnSessionStarted();
         void OnSessionClosed();
         void OnReceive(IRequestInfo info);
+        void HandleException(Exception ex);
     }
 
     public interface IAppSession<TRequestInfo> : IAppSession

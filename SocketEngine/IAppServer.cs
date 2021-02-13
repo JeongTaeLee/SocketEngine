@@ -7,14 +7,11 @@ namespace SocketEngine
 {
     public interface IAppServer : ILoggerProvider
     {
-        ILoggerFactory loggerFactroy { get; }
-
-        ServerConfig config { get; }
-
-        ISocketServer socketServer { get;  }
+        IServerConfig config { get; }
 
         void Start();
         void Close();
+        void HandleException(Exception ex);
 
         bool AddSession(IAppSession appSession);
         bool RemoveSession(IAppSession appSession);

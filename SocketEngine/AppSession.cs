@@ -7,9 +7,9 @@ namespace SocketEngine
 {
     public class AppSession : IAppSession
     {
-        public string sessionId { get; private set; } = null;
-        public ISocketSession socketSession { get; private set; } = null;
+        private ISocketSession _socketSession = null;
         
+        public string sessionId { get; private set; } = null;
         public ILogger logger { get; private set; } = null;
 
         public bool Initialize(string sessionId, ISocketSession socketSession)
@@ -18,14 +18,14 @@ namespace SocketEngine
             if (socketSession == null) throw new ArgumentNullException(nameof(socketSession));
 
             this.sessionId = sessionId;
-            this.socketSession = socketSession;
+            this._socketSession = socketSession;
 
             return false;
         }
 
         public void Close()
         {
-            socketSession.Close();
+            _socketSession.Close();
         }
 
         public virtual void OnSessionStarted()
@@ -38,6 +38,11 @@ namespace SocketEngine
 
         public virtual void OnReceive(IRequestInfo info)
         {
+        }
+
+        public virtual void HandleException(Exception ex)
+        {
+
         }
     }
 }
